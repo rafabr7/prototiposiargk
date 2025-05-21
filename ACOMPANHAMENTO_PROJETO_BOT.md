@@ -42,13 +42,13 @@ A seguir, as fases de desenvolvimento e suas respectivas tarefas. Marque as caix
     #     # Retornar objeto de captura configurado
     ```
 *   **Requisitos:**
-    - [ ] 2.1. Implementar seletor automático de backend (MSS/DXcam) ou permitir escolha.
-    - [ ] 2.2. Desenvolver sistema de calibração dinâmica da região do jogo.
-    - [ ] 2.3. Implementar taxa de captura ajustável (15-30 FPS).
+    - [x] 2.1. Implementar seletor automático de backend (MSS/DXcam) ou permitir escolha. (MSS implementado e funcional, DXCam adiado)
+    - [x] 2.2. Desenvolver sistema de calibração dinâmica da região do jogo (seleção de janela e monitoramento básico).
+    - [x] 2.3. Implementar taxa de captura ajustável (15-30 FPS) (estrutura básica implementada, otimização posterior).
 *   **Entregáveis Esperados:**
-    - [ ] Código Python comentado em português.
-    - [ ] Exemplo de uso/implementação da captura de tela.
-    - [ ] Arquivos de configuração relacionados (se houver).
+    - [x] Código Python comentado em português (`screen_capture.py` com MSSCapturer, calibração e ajuste de FPS básico).
+    - [x] Exemplo de uso/implementação da captura de tela (bloco `__main__` em `screen_capture.py`).
+    - [ ] Arquivos de configuração relacionados (se houver) (Nenhum ainda para esta fase).
     - [ ] Técnicas anti-detecção específicas (ex: variação na taxa de captura se relevante).
 
 ---
@@ -203,9 +203,18 @@ A seguir, as fases de desenvolvimento e suas respectivas tarefas. Marque as caix
 *(Esta seção é para você preencher e atualizar)*
 
 -   **Última Tarefa Concluída:** Fase 1 completa (Configuração Inicial, Geração de `requirements.txt`).
--   **Em Andamento:** Início da Fase 2.
--   **Próximos Objetivos:** Desenvolver o Sistema de Captura de Tela Adaptativo (Fase 2).
--   **Bloqueios/Desafios:** Nenhum no momento.
+-   **Em Andamento:** Fase 2 - Sistema de Captura de Tela Adaptativo.
+-   **Próximos Objetivos:** Fase 2.3 - Implementar taxa de captura ajustável (15-30 FPS).
+-   **Bloqueios/Desafios:** DXCam adiado devido à compatibilidade com Python 3.13.
+
+---
+
+**Lembre-se de atualizar este arquivo regularmente, marcando as tarefas concluídas e adicionando notas sobre o progresso.** 
+
+-   **Última Tarefa Concluída:** Fase 2 completa (Sistema de Captura de Tela Adaptativo - MSS).
+-   **Em Andamento:** Preparação para Fase 3.
+-   **Próximos Objetivos:** Fase 3 - Motor de Reconhecimento de Monstros.
+-   **Bloqueios/Desafios:** DXCam adiado; Otimização de FPS para captura de tela será revisitada.
 
 ---
 
