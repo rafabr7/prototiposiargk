@@ -22,13 +22,13 @@ A seguir, as fases de desenvolvimento e suas respectivas tarefas. Marque as caix
     # }
     ```
 *   **Tarefas:**
-    - [ ] 1.1. Criar script de instalação automática com `pip install --upgrade`.
-    - [ ] 1.2. Implementar verificação de compatibilidade de versões das bibliotecas.
-    - [ ] 1.3. Gerar arquivo `requirements.txt` otimizado.
+    - [x] 1.1. Criar script de instalação automática com `pip install --upgrade`.
+    - [x] 1.2. Implementar verificação de compatibilidade de versões das bibliotecas.
+    - [x] 1.3. Gerar arquivo `requirements.txt` otimizado.
 *   **Entregáveis Esperados:**
-    - [ ] Código Python comentado em português.
-    - [ ] Exemplo de uso/implementação do script de instalação.
-    - [ ] Arquivo `requirements.txt` gerado.
+    - [x] Código Python comentado em português (`install_dependencies.py`).
+    - [x] Exemplo de uso/implementação do script de instalação (execução via `py install_dependencies.py`).
+    - [x] Arquivo `requirements.txt` gerado.
     - [ ] Técnicas anti-detecção específicas (se aplicável nesta fase).
 
 ---
@@ -202,10 +202,10 @@ A seguir, as fases de desenvolvimento e suas respectivas tarefas. Marque as caix
 
 *(Esta seção é para você preencher e atualizar)*
 
--   **Última Tarefa Concluída:**
--   **Em Andamento:**
--   **Próximos Objetivos:**
--   **Bloqueios/Desafios:**
+-   **Última Tarefa Concluída:** Fase 1 completa (Configuração Inicial, Geração de `requirements.txt`).
+-   **Em Andamento:** Início da Fase 2.
+-   **Próximos Objetivos:** Desenvolver o Sistema de Captura de Tela Adaptativo (Fase 2).
+-   **Bloqueios/Desafios:** Nenhum no momento.
 
 ---
 
