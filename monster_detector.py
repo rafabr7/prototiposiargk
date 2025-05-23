@@ -216,9 +216,6 @@ if __name__ == "__main__":
     print("Iniciando teste do MonsterDetector...")
     
     # --- Configuração da Pasta de Sprites ---
-    # Esta é a pasta principal onde você deve organizar os sprites dos monstros.
-    # Dentro desta pasta, crie subpastas com o nome de cada monstro.
-    # Ex: monster_sprites/Zombie/contem_sprites_do_zombie.png
     sprites_dir_base = "monster_sprites" 
     print(f"ATTENÇÃO: O detector tentará carregar sprites da pasta: '{os.path.abspath(sprites_dir_base)}'")
     print(f"Certifique-se que esta pasta exista e contenha subpastas para cada monstro com seus sprites PNG.")
@@ -247,7 +244,73 @@ if __name__ == "__main__":
         for nome_monstro, lista_sprites in detector.templates.items():
             print(f"  - Monstro '{nome_monstro}': {len(lista_sprites)} sprite(s) carregado(s).")
 
-    print("\nTemplates carregados. Prosseguindo para configuração da captura de tela (se disponível).")
+    # --- Seleção de Monstros pelo Usuário ---
+    monstros_disponiveis = list(detector.templates.keys())
+    monstros_alvo_selecionados = []
+
+    if not monstros_disponiveis:
+        print("\nNenhum monstro disponível para detecção. Encerrando.")
+        exit()
+    
+    print("\n--- SELEÇÃO DE MONSTROS PARA DETECÇÃO ---")
+    print("Monstros disponíveis:")
+    for i, nome_monstro in enumerate(monstros_disponiveis):
+        print(f"  {i+1}. {nome_monstro}")
+    print(f"  {len(monstros_disponiveis)+1}. TODOS os monstros")
+    print(f"  0. Nenhum (apenas visualização da captura, se ativa)")
+
+    while True:
+        try:
+            escolha_str = input(f"Digite os números dos monstros a detectar, separados por vírgula (ex: 1,3), ou '{len(monstros_disponiveis)+1}' para todos, ou '0' para nenhum: ")
+            if not escolha_str.strip(): # String vazia ou só espaços
+                 print("Nenhuma escolha feita. Usando 'TODOS' por padrão.")
+                 monstros_alvo_selecionados = None # None significa todos para a função detectar_monstros
+                 break
+
+            escolhas_num = [int(x.strip()) for x in escolha_str.split(',') if x.strip()]
+            
+            if not escolhas_num and escolha_str.strip() != "0": # Se a lista de números é vazia mas não foi digitado "0"
+                print("Entrada inválida. Por favor, digite números da lista.")
+                continue
+
+            monstros_temp = set() # Usar um set para evitar duplicados
+            processar_todos = False
+
+            for num in escolhas_num:
+                if num == 0:
+                    monstros_temp.clear() # Limpa qualquer outra seleção se 0 for escolhido
+                    break 
+                elif num == len(monstros_disponiveis) + 1:
+                    processar_todos = True
+                    break 
+                elif 1 <= num <= len(monstros_disponiveis):
+                    monstros_temp.add(monstros_disponiveis[num-1])
+                else:
+                    raise ValueError(f"Número inválido: {num}")
+            
+            if processar_todos:
+                monstros_alvo_selecionados = None # Sinaliza para detectar todos
+                print("Detectando TODOS os monstros.")
+            elif not monstros_temp and "0" in escolha_str: # Se o set está vazio e "0" foi uma das escolhas
+                 monstros_alvo_selecionados = []
+                 print("Nenhum monstro será detectado (apenas visualização).")
+            elif monstros_temp:
+                monstros_alvo_selecionados = list(monstros_temp)
+                print(f"Monstros selecionados para detecção: {', '.join(monstros_alvo_selecionados)}")
+            elif not monstros_temp and "0" not in escolha_str and not processar_todos: # Se vazio, mas não por causa do '0' nem 'todos'
+                print("Nenhuma seleção válida feita. Tente novamente.")
+                continue
+
+
+            break # Sai do loop while True se a entrada for válida
+
+        except ValueError as e:
+            print(f"Entrada inválida: {e}. Por favor, use os números da lista, separados por vírgula, ou '{len(monstros_disponiveis)+1}' para todos, ou '0' para nenhum.")
+        except Exception as e:
+            print(f"Ocorreu um erro inesperado ao processar sua escolha: {e}")
+
+
+    print("\nProsseguindo para configuração da captura de tela (se disponível).")
 
     capturer_instance = None 
     if SCREEN_CAPTURE_AVAILABLE:
@@ -260,7 +323,15 @@ if __name__ == "__main__":
 
             if selected_region_dict and target_window_title:
                 print(f"Captura configurada para a janela: '{target_window_title}' com região: {selected_region_dict}")
-                print("Pressione 'q' na janela de visualização para sair.")
+                
+                # Determinar o que será exibido no título da janela
+                target_display_name = "Nenhum"
+                if monstros_alvo_selecionados is None:
+                    target_display_name = "Todos"
+                elif isinstance(monstros_alvo_selecionados, list) and len(monstros_alvo_selecionados) > 0:
+                    target_display_name = ', '.join(monstros_alvo_selecionados)
+                
+                print(f"Procurando por: {target_display_name}. Pressione 'q' na janela de visualização para sair.")
                 
                 target_fps = 15 
                 delay_per_frame = 1.0 / target_fps
@@ -282,12 +353,27 @@ if __name__ == "__main__":
                         # Se detectar_monstros não modificar frame_para_detectar, podemos usar frame_for_display
                         frame_para_detectar = frame_for_display.copy() # Ou raw_frame.copy() se preferir
                         
-                        # Detectar APENAS Zombie (ou o monstro que você configurou os sprites)
-                        detections = detector.detectar_monstros(frame_para_detectar, threshold=0.4, monstros_alvo=["Zombie"]) 
+                        current_detections = []
+                        if monstros_alvo_selecionados is None or \
+                           (isinstance(monstros_alvo_selecionados, list) and len(monstros_alvo_selecionados) > 0):
+                            current_detections = detector.detectar_monstros(
+                                frame_para_detectar, 
+                                threshold=0.7, 
+                                monstros_alvo=monstros_alvo_selecionados # USAR A SELEÇÃO CORRETA
+                            )
 
-                        if detections:
-                            print(f"Detectado(s) {len(detections)} monstro(s) 'Zombie' no frame atual:")
-                        for d in detections:
+                        if current_detections:
+                            monstros_encontrados_no_frame = defaultdict(int)
+                            for d_item in current_detections:
+                                monstros_encontrados_no_frame[d_item['nome']] += 1
+                            
+                            summary_msgs = []
+                            for nome_monstro_detectado, qtd in monstros_encontrados_no_frame.items():
+                                summary_msgs.append(f"{qtd} '{nome_monstro_detectado}'")
+                            if summary_msgs: # Só printar se algo foi detectado
+                                print(f"Detectado(s) no frame atual: {', '.join(summary_msgs)}")
+
+                        for d in current_detections: 
                             nome = d['nome']
                             x, y, w, h = d['regiao']
                             conf = d['confianca']
@@ -298,9 +384,9 @@ if __name__ == "__main__":
                             cv2.rectangle(frame_for_display, pt1, pt2, (0, 0, 255), 2) 
                             label = f"{nome} ({conf:.2f})"
                             cv2.putText(frame_for_display, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
-                            print(f"  - {nome} (sprite: {sprite_usado}) @ ({x},{y},{w},{h}) com conf={conf:.2f}")
+                            # print(f"  - {nome} (sprite: {sprite_usado}) @ ({x},{y},{w},{h}) com conf={conf:.2f}")
 
-                        cv2.imshow(f"Detecção em Tempo Real - Focando em Zombie - {target_window_title}", frame_for_display)
+                        cv2.imshow(f"Detecção em Tempo Real - Alvo(s): {target_display_name} - {target_window_title}", frame_for_display)
 
                         elapsed_time = time.time() - start_time
                         sleep_time = delay_per_frame - elapsed_time
@@ -326,45 +412,84 @@ if __name__ == "__main__":
             print("Falha ao criar a instância do capturador (MSS). O teste de integração não será executado.")
     else:
         print("\nAVISO: Módulo 'screen_capture' não disponível. Pulando teste de integração com captura de tela.")
-        print("Executando teste de detecção para Zombie em frame dummy (usando sprites de 'monster_sprites/Zombie/')...")
         
-        dummy_frame = np.zeros((600, 800, 3), dtype=np.uint8) + 200 
-        nome_monstro_teste_detect = "Zombie"  
-        sprite_para_inserir_no_dummy = None
-        nome_arquivo_sprite_inserido = ""
+        # Determinar o que será exibido no título da janela dummy e na mensagem
+        dummy_target_display_name = "Nenhum"
+        if monstros_alvo_selecionados is None:
+            dummy_target_display_name = "Todos os monstros"
+        elif isinstance(monstros_alvo_selecionados, list) and len(monstros_alvo_selecionados) > 0:
+            dummy_target_display_name = f"monstro(s) '{', '.join(monstros_alvo_selecionados)}'"
+        
+        print(f"Executando teste de detecção para {dummy_target_display_name} em frame dummy...")
+        
+        dummy_frame_base = np.full((600, 800, 3), 50, dtype=np.uint8) # Cinza escuro
+        cv2.putText(dummy_frame_base, "Dummy Frame (Sem Captura Real)", (50, 50), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 200, 200), 2, cv2.LINE_AA)
 
-        # Tentar carregar um sprite real do Zombie para inserir no dummy frame
-        # Isso só funcionará se os templates foram carregados com sucesso anteriormente
-        if nome_monstro_teste_detect in detector.templates and detector.templates[nome_monstro_teste_detect]:
-            if detector.templates[nome_monstro_teste_detect]: # Verifica se a lista de sprites não está vazia
-                 sprite_para_inserir_no_dummy = detector.templates[nome_monstro_teste_detect][0]
-                 nome_arquivo_sprite_inserido = detector.template_filenames[nome_monstro_teste_detect][0]
-            
-            if sprite_para_inserir_no_dummy is not None:
-                h_sprite, w_sprite = sprite_para_inserir_no_dummy.shape[:2]
-                pos_x, pos_y = 100, 150
-                if pos_y + h_sprite <= dummy_frame.shape[0] and pos_x + w_sprite <= dummy_frame.shape[1]:
-                    dummy_frame[pos_y:pos_y+h_sprite, pos_x:pos_x+w_sprite] = sprite_para_inserir_no_dummy
-                    print(f"Sprite real '{nome_arquivo_sprite_inserido}' de '{nome_monstro_teste_detect}' inserido no frame dummy em ({pos_x}, {pos_y})")
-                else:
-                    print(f"Não foi possível inserir o sprite '{nome_arquivo_sprite_inserido}' de '{nome_monstro_teste_detect}' no frame dummy (dimensões excedem).")
-            else:
-                print(f"Nenhum sprite encontrado para '{nome_monstro_teste_detect}' nos templates carregados para inserir no dummy frame. O dummy frame estará vazio.")
-        else:
-            print(f"Monstro '{nome_monstro_teste_detect}' não encontrado nos templates carregados (pasta '{sprites_dir_base}/{nome_monstro_teste_detect}' vazia ou inexistente?). Não é possível popular o dummy frame.")
-                
-        deteccoes_dummy = detector.detectar_monstros(dummy_frame, threshold=0.7, monstros_alvo=[nome_monstro_teste_detect])
+        # Adicionar sprite de exemplo ao dummy frame (lógica já existente e modificada anteriormente)
+        # O código anterior já tentava adicionar um sprite com base em 'monstros_alvo_selecionados'
+        # Esta parte deve permanecer como está, pois foi melhorada na edição anterior.
+        # Apenas garantindo que dummy_frame seja uma cópia para não modificar o dummy_frame_base
+        dummy_frame_para_popular = dummy_frame_base.copy()
+
+        if monstros_alvo_selecionados and isinstance(monstros_alvo_selecionados, list) and len(monstros_alvo_selecionados) > 0:
+            primeiro_monstro_alvo_dummy = monstros_alvo_selecionados[0]
+            if primeiro_monstro_alvo_dummy in detector.templates and detector.templates[primeiro_monstro_alvo_dummy]:
+                # Carregar o sprite original (colorido) para o dummy frame
+                primeiro_sprite_path_dummy = os.path.join(detector.pasta_sprites, primeiro_monstro_alvo_dummy, detector.template_filenames[primeiro_monstro_alvo_dummy][0])
+                try:
+                    sprite_para_dummy_color = cv2.imread(primeiro_sprite_path_dummy, cv2.IMREAD_UNCHANGED)
+                    if sprite_para_dummy_color is not None:
+                        sh, sw = sprite_para_dummy_color.shape[:2]
+                        dh, dw = dummy_frame_para_popular.shape[:2]
+                        if sh < dh and sw < dw:
+                            y_offset = (dh - sh) // 2
+                            x_offset = (dw - sw) // 2
+                            if sprite_para_dummy_color.shape[2] == 4: # Com alfa
+                                alpha_s = sprite_para_dummy_color[:, :, 3] / 255.0
+                                alpha_l = 1.0 - alpha_s
+                                for c_idx in range(0, 3):
+                                    dummy_frame_para_popular[y_offset:y_offset+sh, x_offset:x_offset+sw, c_idx] = \
+                                        (alpha_s * sprite_para_dummy_color[:, :, c_idx] +
+                                         alpha_l * dummy_frame_para_popular[y_offset:y_offset+sh, x_offset:x_offset+sw, c_idx])
+                            else: # Sem alfa
+                                dummy_frame_para_popular[y_offset:y_offset+sh, x_offset:x_offset+sw] = sprite_para_dummy_color[:,:,:3]
+                            print(f"Sprite '{detector.template_filenames[primeiro_monstro_alvo_dummy][0]}' de '{primeiro_monstro_alvo_dummy}' adicionado ao dummy frame.")
+                        else:
+                            print(f"Sprite de '{primeiro_monstro_alvo_dummy}' muito grande para o dummy frame.")
+                except Exception as e_sprite_dummy:
+                    print(f"Erro ao adicionar sprite de '{primeiro_monstro_alvo_dummy}' ao dummy frame: {e_sprite_dummy}")
+        elif monstros_alvo_selecionados is None: # Todos
+             print("Modo 'Todos' no dummy. Nenhum sprite de exemplo específico será adicionado.")
+        else: # Nenhum
+             print("Modo 'Nenhum' no dummy. Nenhum sprite será adicionado.")
+        
+        # A detecção no dummy frame já usa 'monstros_alvo_selecionados' devido à edição anterior.
+        # A variável 'dummy_frame' na chamada abaixo deve ser a que contém o sprite (dummy_frame_para_popular)
+        deteccoes_dummy = detector.detectar_monstros(dummy_frame_para_popular, threshold=0.7, monstros_alvo=monstros_alvo_selecionados)
+        
+        frame_para_exibir_dummy = dummy_frame_para_popular.copy() # Desenhar sobre esta cópia
+
         if deteccoes_dummy:
             print(f"Detectados em dummy frame ({len(deteccoes_dummy)}):")
-            for d in deteccoes_dummy: 
-                print(f"  - {d['nome']} (sprite: {d['sprite_usado']}) @ {d['regiao']} conf {d['confianca']:.2f}")
-                x,y,w,h = d['regiao']
-                cv2.rectangle(dummy_frame, (x,y), (x+w,y+h), (0,0,255), 2)
-            cv2.imshow("Dummy Frame com Deteccao de Zombie", dummy_frame)
+            for d_dummy in deteccoes_dummy: 
+                print(f"  - {d_dummy['nome']} (sprite: {d_dummy['sprite_usado']}) @ {d_dummy['regiao']} conf {d_dummy['confianca']:.2f}")
+                x,y,w,h = d_dummy['regiao']
+                cv2.rectangle(frame_para_exibir_dummy, (x,y), (x+w,y+h), (0,0,255), 2) # Desenha no frame de exibição
+            
+            dummy_window_title_cv = f"Dummy Frame - Alvo(s): {dummy_target_display_name}"
+            cv2.imshow(dummy_window_title_cv, frame_para_exibir_dummy)
             print("Pressione qualquer tecla na janela do dummy frame para fechar.")
             cv2.waitKey(0)
-            cv2.destroyWindow("Dummy Frame com Deteccao de Zombie")
+            cv2.destroyWindow(dummy_window_title_cv)
         else:
-            print(f"Nenhum monstro '{nome_monstro_teste_detect}' detectado no dummy frame.")
+            print(f"Nenhum {dummy_target_display_name} detectado no dummy frame.")
+            # Mostrar o dummy frame mesmo que nada seja detectado, para visualização
+            dummy_window_title_cv = f"Dummy Frame - Alvo(s): {dummy_target_display_name} (Nenhuma Deteccao)"
+            cv2.imshow(dummy_window_title_cv, frame_para_exibir_dummy) # Mostrar o frame com o sprite (ou sem)
+            print("Pressione qualquer tecla para fechar o dummy frame.")
+            cv2.waitKey(0)
+            cv2.destroyWindow(dummy_window_title_cv)
+
 
     print("\nTeste do MonsterDetector finalizado.") 

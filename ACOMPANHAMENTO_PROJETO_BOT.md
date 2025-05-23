@@ -69,6 +69,7 @@ A seguir, as fases de desenvolvimento e suas respectivas tarefas. Marque as caix
     - [x] 3.2. Desenvolver sistema de correspondência de templates (inicialmente simples com `cv2.matchTemplate`, com possibilidade de evolução para hierárquico).
     - [x] 3.3. Implementar cache de templates para performance (cache simples no carregamento).
     - [x] 3.4. Criar lógica para carregar templates de uma pasta de sprites (suporta subpastas por monstro).
+    - [x] 3.5. Implementar seleção de monstros alvo para detecção.
 *   **Entregáveis Esperados:**
     - [x] Código Python comentado em português (`monster_detector.py` com lógica de carregamento de subpastas e detecção).
     - [x] Exemplo de uso/implementação do detector de monstros (bloco `__main__` em `monster_detector.py` agora integrado com `screen_capture.py` para teste em tempo real).
@@ -214,6 +215,15 @@ A seguir, as fases de desenvolvimento e suas respectivas tarefas. Marque as caix
 -   **Última Tarefa Concluída:** Fase 2 completa (Sistema de Captura de Tela Adaptativo - MSS).
 -   **Em Andamento:** Fase 3 - Motor de Reconhecimento de Monstros.
 -   **Próximos Objetivos:** Fase 3.1 - Pré-processamento de imagens; Otimizações adicionais na detecção.
+-   **Bloqueios/Desafios:** DXCam adiado; Otimização de FPS para captura de tela será revisitada.
+
+---
+
+**Lembre-se de atualizar este arquivo regularmente, marcando as tarefas concluídas e adicionando notas sobre o progresso.** 
+
+-   **Última Tarefa Concluída:** Fase 3.1, 3.2, 3.3, 3.4, 3.5 (Motor de Reconhecimento de Monstros com pré-processamento, cache, carregamento de subpastas e seleção de alvos).
+-   **Em Andamento:** Conclusão da Fase 3.
+-   **Próximos Objetivos:** Iniciar Fase 4 - Controle Humanizado de Mouse (Tarefa 4.1: Movimentos com variação de aceleração).
 -   **Bloqueios/Desafios:** DXCam adiado; Otimização de FPS para captura de tela será revisitada.
 
 ---
